@@ -1,0 +1,72 @@
+# ---------------------------------------------------------------
+# Base configuration (default profile = in-memory Caffeine + H2)
+# Profiles: redis | redis,two-level | redis,sentinel | redis,cluster | postgres
+# ---------------------------------------------------------------
+spring:
+  application:
+    name: telecom-cache-service
+
+  datasource:
+    url: jdbc:h2:mem:telecomdb;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+    defer-datasource-initialization: true   # create tables first, then run data.sql
+  sql:
+    init:
+      mode: always
+  h2:
+    console:
+      enabled: true
+
+  data:
+    redis:
+      repositories:
+        enabled: false   # Redis is used as a cache only, not as a Spring Data repository store
+
+# ---------------- Cache policy (all profiles) ----------------
+telecom:
+  cache:
+    namespace: telecom          # Redis key namespace -> telecom:v1:<region>::<key>
+    schema-version: v1          # bump after incompatible DTO changes
+    default-ttl: 10m
+    l1-ttl: 30s                 # local tier TTL in the two-level profile
+    use-scan-for-clear: true
+    catalog-refresh-cron: "0 */10 * * * *"
+    caches:
+      tariff-plans:             # reference data, changes rarely
+        ttl: 6h
+        max-size: 1000
+      plan-catalog:             # one list entry, refreshed on schedule
+        ttl: 15m
+        max-size: 10
+      subscribers:              # profile data, changes on plan change / barring
+        ttl: 5m
+        max-size: 200000
+      subscriber-details:       # composite (subscriber + plan), shortest TTL
+        ttl: 2m
+        max-size: 100000
+
+# ---------------- Monitoring ----------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,caches,prometheus
+  endpoint:
+    health:
+      show-details: always
+  health:
+    redis:
+      enabled: false            # enabled in the redis profile
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    com.telecom: DEBUG
+    org.springframework.cache: INFO

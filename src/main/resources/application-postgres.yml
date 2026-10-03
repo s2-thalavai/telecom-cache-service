@@ -1,0 +1,16 @@
+# Shared database - needed when running several instances (e.g. the two-level demo).
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/telecom
+    username: ${DB_USER:telecom}
+    password: ${DB_PASSWORD:telecom}
+  jpa:
+    hibernate:
+      ddl-auto: update
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data-postgres.sql
+  h2:
+    console:
+      enabled: false

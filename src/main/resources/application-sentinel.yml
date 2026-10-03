@@ -1,0 +1,14 @@
+# High availability with Redis Sentinel. Run: --spring.profiles.active=redis,sentinel
+# When sentinel is configured, spring.data.redis.host/port are ignored:
+# Lettuce asks the sentinels for the current master and follows failovers automatically.
+spring:
+  data:
+    redis:
+      sentinel:
+        master: ${REDIS_SENTINEL_MASTER:telecom-master}
+        nodes: ${REDIS_SENTINELS:sentinel-1:26379,sentinel-2:26379,sentinel-3:26379}
+        password: ${REDIS_SENTINEL_PASSWORD:}
+
+telecom:
+  cache:
+    read-from: upstream     # or replicaPreferred to offload reads (accepts replication lag)

@@ -1,0 +1,17 @@
+# Horizontal scaling with Redis Cluster. Run: --spring.profiles.active=redis,cluster
+spring:
+  data:
+    redis:
+      cluster:
+        nodes: ${REDIS_CLUSTER_NODES:redis-node-1:6379,redis-node-2:6379,redis-node-3:6379}
+        max-redirects: 3
+      lettuce:
+        cluster:
+          refresh:
+            period: 30s       # periodic topology refresh
+            adaptive: true    # refresh on MOVED/ASK redirects and reconnects
+
+telecom:
+  cache:
+    use-scan-for-clear: false   # SCAN is per node; KEYS is fanned out to all masters by Spring Data Redis
+    read-from: upstream

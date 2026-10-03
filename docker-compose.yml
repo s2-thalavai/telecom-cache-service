@@ -1,0 +1,19 @@
+# Local infrastructure for the "redis", "two-level" and "postgres" profiles.
+services:
+  redis:
+    image: redis:7.4
+    container_name: telecom-redis
+    ports:
+      - "6379:6379"
+    # Bounded memory + LFU eviction: hot subscribers/plans stay, cold ones are evicted first
+    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lfu", "--appendonly", "no"]
+
+  postgres:
+    image: postgres:16
+    container_name: telecom-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: telecom
+      POSTGRES_USER: telecom
+      POSTGRES_PASSWORD: telecom

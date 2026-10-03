@@ -1,0 +1,25 @@
+# Redis as the (distributed) cache provider. Run: --spring.profiles.active=redis
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      username: ${REDIS_USERNAME:}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL:false}     # true in every non-local environment
+      timeout: 250ms                    # fail fast: the cache must never slow the API down
+      connect-timeout: 500ms
+      client-name: ${spring.application.name}
+      lettuce:
+        pool:
+          enabled: true
+          max-active: 32
+          max-idle: 16
+          min-idle: 4
+          max-wait: 200ms
+
+management:
+  health:
+    redis:
+      enabled: true
